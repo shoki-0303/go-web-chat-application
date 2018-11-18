@@ -21,5 +21,15 @@ func (c *client) read() {
 		}
 		c.room.forward <- msg
 	}
-	close(c.send)
+	c.socket.Close()
+}
+
+func (c *client) write() {
+	for msg := range c.send {
+		if err := c.socket.WriteMessage(websocket.TextMessage, msg); err != nil {
+			fmt.Println("client.write", "-", err)
+			break
+		}
+	}
+	c.socket.Close()
 }
