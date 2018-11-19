@@ -28,6 +28,7 @@ func main() {
 	flag.Parse()
 	http.Handle("/chat", mustAuth(&templateHandler{filename: "chat.html"}))
 	http.Handle("/room", r)
+	http.Handle("/login", &templateHandler{filename: "login.html"})
 	go r.run()
 	if err := http.ListenAndServe(*addr, nil); err != nil {
 		log.Fatalln("ListenAndServe error:", err)
