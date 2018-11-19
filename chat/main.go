@@ -26,7 +26,7 @@ func main() {
 	r := newRoom()
 	addr := flag.String("addr", ":8080", "address of application")
 	flag.Parse()
-	http.Handle("/chat", &templateHandler{filename: "chat.html"})
+	http.Handle("/chat", mustAuth(&templateHandler{filename: "chat.html"}))
 	http.Handle("/room", r)
 	go r.run()
 	if err := http.ListenAndServe(*addr, nil); err != nil {
