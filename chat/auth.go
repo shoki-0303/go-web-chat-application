@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -15,12 +15,13 @@ func mustAuth(h http.Handler) http.Handler {
 
 func (h *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if _, err := r.Cookie("auth"); err == http.ErrNoCookie {
-		//未認証
-		fmt.Println("未認証")
+		log.Println("未認証")
+		w.Header().Set("Location", "/login")
+		w.WriteHeader(http.StatusTemporaryRedirect)
 	} else if err != nil {
 		panic(err.Error())
 	} else {
-		//認証
-		fmt.Println("認証")
+		log.Println("認証通過")
+		h.next.ServeHTTP(w, r)
 	}
 }
