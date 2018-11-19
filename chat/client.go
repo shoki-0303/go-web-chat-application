@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/gorilla/websocket"
 )
@@ -14,12 +14,12 @@ type client struct {
 
 func (c *client) read() {
 	for {
-		_, msg, err := c.socket.ReadMessage()
-		if err != nil {
-			fmt.Println("client.read", "-", err)
+		if _, msg, err := c.socket.ReadMessage(); err == nil {
+			c.room.forward <- msg
+		} else {
+			log.Println("client", "-", err)
 			break
 		}
-		c.room.forward <- msg
 	}
 	c.socket.Close()
 }
@@ -27,7 +27,7 @@ func (c *client) read() {
 func (c *client) write() {
 	for msg := range c.send {
 		if err := c.socket.WriteMessage(websocket.TextMessage, msg); err != nil {
-			fmt.Println("client.write", "-", err)
+			log.Println("client.write", "-", err)
 			break
 		}
 	}
