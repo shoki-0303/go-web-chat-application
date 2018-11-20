@@ -4,11 +4,13 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/stretchr/objx"
+
 	"github.com/gorilla/websocket"
 )
 
 type room struct {
-	forward chan []byte
+	forward chan message
 	join    chan *client
 	leave   chan *client
 	clients map[*client]bool
@@ -16,7 +18,7 @@ type room struct {
 
 func newRoom() *room {
 	return &room{
-		forward: make(chan []byte),
+		forward: make(chan message),
 		join:    make(chan *client),
 		leave:   make(chan *client),
 		clients: make(map[*client]bool),
@@ -34,7 +36,7 @@ func (r *room) run() {
 			close(client.send)
 			log.Println("client leaves")
 		case msg := <-r.forward:
-			log.Println("forwardが" + string(msg) + "を受け取りました")
+			log.Println("forwardが" + msg.Message + "を受け取りました")
 			for client := range r.clients {
 				select {
 				case client.send <- msg:
@@ -59,11 +61,18 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		log.Println("conn err", err)
 		return
 	}
-	client := &client{
-		socket: socket,
-		send:   make(chan []byte),
-		room:   r,
+	cookie, err := req.Cookie("auth")
+	if err != nil {
+		log.Println("cookie err", err)
+		return
 	}
+	client := &client{
+		socket:   socket,
+		send:     make(chan message),
+		room:     r,
+		userData: make(map[string]interface{}),
+	}
+	client.userData = objx.MustFromBase64(cookie.Value)
 	r.join <- client
 	defer func() { r.leave <- client }()
 	go client.write()
