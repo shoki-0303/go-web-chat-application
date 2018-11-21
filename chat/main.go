@@ -55,6 +55,7 @@ func main() {
 	http.Handle("/room", r)
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.HandleFunc("/auth/", loginHandler)
+	http.Handle("/upload", &templateHandler{filename: "upload.html"})
 	go r.run()
 	if err := http.ListenAndServe(*addr, nil); err != nil {
 		log.Fatalln("ListenAndServe error:", err)
