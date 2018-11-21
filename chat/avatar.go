@@ -15,8 +15,11 @@ type Avatar interface {
 // AuthAvatar : get avatar via auth
 type AuthAvatar struct{}
 
+// UseAuthAvatar : instance of AuthAvatar
+var UseAuthAvatar AuthAvatar
+
 // GetAvatar : get avatar-url
-func (*AuthAvatar) GetAvatar(c *client) (string, error) {
+func (AuthAvatar) GetAvatar(c *client) (string, error) {
 	if url, ok := c.userData["avatar_url"]; ok {
 		if urlStr, ok := url.(string); ok {
 			return urlStr, nil

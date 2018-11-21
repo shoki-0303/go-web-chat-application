@@ -20,8 +20,8 @@ func (c *client) read() {
 		if err := c.socket.ReadJSON(&msg); err == nil {
 			msg.Time = time.Now()
 			msg.Name = c.userData["name"].(string)
-			if url, ok := c.userData["avatar_url"]; ok {
-				msg.AvatarURL = url.(string)
+			if url, err := avatar.GetAvatar(c); err == nil {
+				msg.AvatarURL = url
 			}
 			c.room.forward <- msg
 		} else {
