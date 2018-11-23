@@ -1,6 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -38,5 +42,18 @@ func TestGravatarAvatar(t *testing.T) {
 }
 
 func TestFileSystemAvatar(t *testing.T) {
-	t.Skip("skip now")
+	var fileSystemAvatar FileSystemAvatar
+	chatuser := new(chatuser)
+	chatuser.userid = "abc"
+
+	filename := chatuser.userid + ".jpeg"
+	avatarFile := filepath.Join("avatars", filename)
+	ioutil.WriteFile(avatarFile, []byte{}, 0777)
+	defer func() { os.Remove(avatarFile) }()
+
+	avatarURL, _ := fileSystemAvatar.GetAvatar(chatuser)
+	if avatarURL != "/avatars/abc.jpeg" {
+		fmt.Println(avatarURL)
+		t.Error("GetAvatar should return right url")
+	}
 }
