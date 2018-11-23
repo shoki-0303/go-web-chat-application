@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"path/filepath"
 	"strings"
 )
 
@@ -47,6 +49,28 @@ func (GravatarAvatar) GetAvatar(c *client) (string, error) {
 			io.WriteString(hasher, emailStrLow)
 			url := fmt.Sprintf("https://www.gravatar.com/avatar/%x", hasher.Sum(nil))
 			return url, nil
+		}
+	}
+	return "", ErrNoAvatar
+}
+
+// FileSystemAvatar : get avatar via local-file system
+type FileSystemAvatar struct{}
+
+// UseFileSystemAvatar : instance of FileSystemAvatar
+var UseFileSystemAvatar FileSystemAvatar
+
+// GetAvatar : get avatar-url
+func (FileSystemAvatar) GetAvatar(c *client) (string, error) {
+	if userid, ok := c.userData["userid"]; ok {
+		if useridStr, ok := userid.(string); ok {
+			if files, err := ioutil.ReadDir("avatars"); err == nil {
+				for _, file := range files {
+					if match, _ := filepath.Match(useridStr+"*", file.Name()); match {
+						return "/avatars/" + file.Name(), nil
+					}
+				}
+			}
 		}
 	}
 	return "", ErrNoAvatar
