@@ -33,12 +33,12 @@ func TestGravatarAvatar(t *testing.T) {
 	client := new(client)
 
 	client.userData = map[string]interface{}{
-		"email": "MyExample@Gmail.com",
+		"userid": "abc",
 	}
 	url, err := gravatarAvatar.GetAvatar(client)
 	if err != nil {
 		t.Error("GetAvatar should not return error")
-	} else if url != "https://www.gravatar.com/avatar/62604ed7843f0e296d40bc82cb7342cc" {
+	} else if url != "https://www.gravatar.com/avatar/abc" {
 		t.Error("GetAvatar should return right url")
 	}
 }
