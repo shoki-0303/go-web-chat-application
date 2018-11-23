@@ -11,7 +11,7 @@ var ErrNoAvatar = errors.New("avatar-url doesn't exist")
 
 // Avatar : avatar instance has a GetAvatar method
 type Avatar interface {
-	GetAvatar(c *client) (string, error)
+	GetAvatar(u *chatuser) (string, error)
 }
 
 // AuthAvatar : get avatar via auth
@@ -21,11 +21,9 @@ type AuthAvatar struct{}
 var UseAuthAvatar AuthAvatar
 
 // GetAvatar : get avatar-url
-func (AuthAvatar) GetAvatar(c *client) (string, error) {
-	if url, ok := c.userData["avatar_url"]; ok {
-		if urlStr, ok := url.(string); ok {
-			return urlStr, nil
-		}
+func (AuthAvatar) GetAvatar(u *chatuser) (string, error) {
+	if u.getAvatarURL() != "" {
+		return u.getAvatarURL(), nil
 	}
 	return "", ErrNoAvatar
 }
@@ -37,14 +35,8 @@ type GravatarAvatar struct{}
 var UseGravatarAvatar GravatarAvatar
 
 // GetAvatar : get avatar-url
-func (GravatarAvatar) GetAvatar(c *client) (string, error) {
-	if userid, ok := c.userData["userid"]; ok {
-		if useridStr, ok := userid.(string); ok {
-			url := "https://www.gravatar.com/avatar/" + useridStr
-			return url, nil
-		}
-	}
-	return "", ErrNoAvatar
+func (GravatarAvatar) GetAvatar(u *chatuser) (string, error) {
+	return "https://www.gravatar.com/avatar/" + u.getUserID(), nil
 }
 
 // FileSystemAvatar : get avatar via local-file system
@@ -54,15 +46,11 @@ type FileSystemAvatar struct{}
 var UseFileSystemAvatar FileSystemAvatar
 
 // GetAvatar : get avatar-url
-func (FileSystemAvatar) GetAvatar(c *client) (string, error) {
-	if userid, ok := c.userData["userid"]; ok {
-		if useridStr, ok := userid.(string); ok {
-			if files, err := ioutil.ReadDir("avatars"); err == nil {
-				for _, file := range files {
-					if match, _ := filepath.Match(useridStr+"*", file.Name()); match {
-						return "/avatars/" + file.Name(), nil
-					}
-				}
+func (FileSystemAvatar) GetAvatar(u *chatuser) (string, error) {
+	if files, err := ioutil.ReadDir("avatars"); err == nil {
+		for _, file := range files {
+			if match, _ := filepath.Match(u.getUserID()+"*", file.Name()); match {
+				return "/avatars/" + file.Name(), nil
 			}
 		}
 	}
