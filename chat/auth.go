@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/md5"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -64,8 +67,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("callback-user error", err)
 			return
 		}
+		hasher := md5.New()
+		io.WriteString(hasher, strings.ToLower(user.Email()))
+		userid := fmt.Sprintf("%x", hasher.Sum(nil))
 		authCookieValue := objx.New(map[string]interface{}{
 			"name":       user.Name(),
+			"userid":     userid,
 			"email":      user.Email(),
 			"avatar_url": user.AvatarURL(),
 		}).MustBase64()
