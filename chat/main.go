@@ -22,7 +22,11 @@ var (
 	googleClientSecret = os.Getenv("Google_Client_Secret")
 )
 
-var avatar Avatar = UseFileSystemAvatar
+var avatars Avatar = TryAvatars{
+	UseFileSystemAvatar,
+	UseGravatarAvatar,
+	UseAuthAvatar,
+}
 
 type templateHandler struct {
 	once     sync.Once

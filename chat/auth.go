@@ -94,7 +94,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		userid := fmt.Sprintf("%x", hasher.Sum(nil))
 		chatUser.userid = userid
 
-		avatarURL, err := avatar.GetAvatar(chatUser)
+		avatarURL, err := avatars.GetAvatar(chatUser)
 		if err != nil {
 			log.Println(err)
 			return
