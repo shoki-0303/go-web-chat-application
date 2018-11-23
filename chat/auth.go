@@ -13,6 +13,24 @@ import (
 	"github.com/stretchr/gomniauth"
 )
 
+// ChatUser : has getAvatarURL method and getUserID method
+type ChatUser interface {
+	getAvatarURL() string
+	getUserID() string
+}
+
+type chatuser struct {
+	avatarurl string
+	userid    string
+}
+
+func (u chatuser) getAvatarURL() string {
+	return u.avatarurl
+}
+func (u chatuser) getUserID() string {
+	return u.userid
+}
+
 type authHandler struct {
 	next http.Handler
 }
@@ -67,14 +85,24 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("callback-user error", err)
 			return
 		}
+
+		chatUser := &chatuser{
+			avatarurl: user.AvatarURL(),
+		}
 		hasher := md5.New()
 		io.WriteString(hasher, strings.ToLower(user.Email()))
 		userid := fmt.Sprintf("%x", hasher.Sum(nil))
+		chatUser.userid = userid
+
+		avatarURL, err := avatar.GetAvatar(chatUser)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
 		authCookieValue := objx.New(map[string]interface{}{
 			"name":       user.Name(),
-			"userid":     userid,
-			"email":      user.Email(),
-			"avatar_url": user.AvatarURL(),
+			"avatar_url": avatarURL,
 		}).MustBase64()
 		http.SetCookie(w, &http.Cookie{
 			Name:  "auth",

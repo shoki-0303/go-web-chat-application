@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,56 +10,50 @@ import (
 
 func TestAuthAvatar(t *testing.T) {
 	var authAvatar AuthAvatar
-	client := new(client)
+	chatuser := new(chatuser)
 
-	avatarURL, err := authAvatar.GetAvatar(client)
+	avatarURL, err := authAvatar.GetAvatar(chatuser)
 	if err != ErrNoAvatar {
 		t.Error("GetAvatar should return ErrNoAvatar")
 	}
-	testURL := "http://avatar-test-url"
-	client.userData = map[string]interface{}{
-		"avatar_url": testURL,
-	}
-	avatarURL, err = authAvatar.GetAvatar(client)
+
+	TestURL := "http://avatar-url"
+	chatuser.avatarurl = TestURL
+
+	avatarURL, err = authAvatar.GetAvatar(chatuser)
 	if err != nil {
-		t.Error("GetAvatar should not return error, when avatar-url exists")
-	} else if avatarURL != testURL {
+		t.Error("GetAvatar should not return error")
+	} else if avatarURL != TestURL {
 		t.Error("GetAvatar should return right url")
 	}
 }
 
 func TestGravatarAvatar(t *testing.T) {
 	var gravatarAvatar GravatarAvatar
-	client := new(client)
+	chatuser := new(chatuser)
+	chatuser.userid = "abc"
 
-	client.userData = map[string]interface{}{
-		"userid": "abc",
-	}
-	url, err := gravatarAvatar.GetAvatar(client)
+	avatarURL, err := gravatarAvatar.GetAvatar(chatuser)
 	if err != nil {
 		t.Error("GetAvatar should not return error")
-	} else if url != "https://www.gravatar.com/avatar/abc" {
+	} else if avatarURL != "https://www.gravatar.com/avatar/abc" {
 		t.Error("GetAvatar should return right url")
 	}
 }
 
 func TestFileSystemAvatar(t *testing.T) {
-	filename := filepath.Join("avatars", "abc.jpeg")
-	ioutil.WriteFile(filename, []byte{}, 0777)
-	defer func() { os.Remove(filename) }()
-
 	var fileSystemAvatar FileSystemAvatar
-	client := new(client)
-	client.userData = map[string]interface{}{
-		"userid": "abc",
-	}
+	chatuser := new(chatuser)
+	chatuser.userid = "abc"
 
-	url, err := fileSystemAvatar.GetAvatar(client)
-	if err != nil {
-		log.Println(err)
-		t.Error("GetAvatar should not return error")
-	} else if url != "/avatars/abc.jpeg" {
+	filename := chatuser.userid + ".jpeg"
+	avatarFile := filepath.Join("avatars", filename)
+	ioutil.WriteFile(avatarFile, []byte{}, 0777)
+	defer func() { os.Remove(avatarFile) }()
+
+	avatarURL, _ := fileSystemAvatar.GetAvatar(chatuser)
+	if avatarURL != "/avatars/abc.jpeg" {
+		fmt.Println(avatarURL)
 		t.Error("GetAvatar should return right url")
 	}
-
 }
