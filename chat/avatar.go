@@ -36,7 +36,10 @@ var UseGravatarAvatar GravatarAvatar
 
 // GetAvatar : get avatar-url
 func (GravatarAvatar) GetAvatar(u *chatuser) (string, error) {
-	return "https://www.gravatar.com/avatar/" + u.getUserID(), nil
+	if u.getUserID() != "" {
+		return "https://www.gravatar.com/avatar/" + u.getUserID(), nil
+	}
+	return "", ErrNoAvatar
 }
 
 // FileSystemAvatar : get avatar via local-file system
