@@ -22,7 +22,7 @@ var (
 	googleClientSecret = os.Getenv("Google_Client_Secret")
 )
 
-var avatar Avatar = UseGravatarAvatar
+var avatar Avatar = UseFileSystemAvatar
 
 type templateHandler struct {
 	once     sync.Once
@@ -57,6 +57,7 @@ func main() {
 	http.HandleFunc("/auth/", loginHandler)
 	http.Handle("/upload", &templateHandler{filename: "upload.html"})
 	http.HandleFunc("/uploader", uploaderHandler)
+	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir("./avatars"))))
 	go r.run()
 	if err := http.ListenAndServe(*addr, nil); err != nil {
 		log.Fatalln("ListenAndServe error:", err)
